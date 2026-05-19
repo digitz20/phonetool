@@ -254,3 +254,14 @@ socket.on('leads-updated', (leads) => {
     allLeads = leads;
     renderLeads();
 });
+
+// Add client-side Socket.io error handling
+socket.on('disconnect', (reason) => {
+    console.error('Socket disconnected:', reason);
+    // You might want to display a message to the user or attempt to reconnect
+});
+
+socket.on('connect_error', (error) => {
+    console.error('Socket connection error:', error);
+    // You might want to display an error message to the user
+});
