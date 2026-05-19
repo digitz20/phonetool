@@ -87,6 +87,54 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('delete-all-phones-for-website', async ({ website }) => {
+        console.log(`Received request to delete all phone numbers for website: ${website}`);
+        let leads = await loadLeads();
+
+        let leadFound = false;
+        leads = leads.map(lead => {
+            if (lead.website === website) {
+                if (lead.phoneNumbers && lead.phoneNumbers.length > 0) {
+                    lead.phoneNumbers = [];
+                    leadFound = true;
+                    console.log(`Deleted all phone numbers for ${website}.`);
+                }
+            }
+            return lead;
+        });
+
+        if (leadFound) {
+            await saveLeads(leads);
+            io.emit('leads-updated', leads);
+        } else {
+            console.log(`Website ${website} not found or had no phone numbers. No changes made.`);
+        }
+    });
+
+    socket.on('delete-all-emails-for-website', async ({ website }) => {
+        console.log(`Received request to delete all emails for website: ${website}`);
+        let leads = await loadLeads();
+
+        let leadFound = false;
+        leads = leads.map(lead => {
+            if (lead.website === website) {
+                if (lead.emails && lead.emails.length > 0) {
+                    lead.emails = [];
+                    leadFound = true;
+                    console.log(`Deleted all emails for ${website}.`);
+                }
+            }
+            return lead;
+        });
+
+        if (leadFound) {
+            await saveLeads(leads);
+            io.emit('leads-updated', leads);
+        } else {
+            console.log(`Website ${website} not found or had no emails. No changes made.`);
+        }
+    });
+
     socket.on('disconnect', () => {
         console.log('user disconnected');
     });

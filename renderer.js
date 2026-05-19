@@ -113,6 +113,32 @@ function renderLeads() {
                 leadDiv.appendChild(phoneEntryDiv);
             });
 
+            // Add "Delete All Phone Numbers for this Website" button
+            const deleteAllPhonesBtn = document.createElement('button');
+            deleteAllPhonesBtn.className = 'delete-btn';
+            deleteAllPhonesBtn.textContent = `Delete All Phones for ${lead.website}`;
+            deleteAllPhonesBtn.addEventListener('click', (e) => {
+                if (confirm(`Are you sure you want to delete all phone numbers for ${lead.website}?`)) {
+                    socket.emit('delete-all-phones-for-website', { website: lead.website });
+                    e.target.classList.add('clicked');
+                    setTimeout(() => e.target.classList.remove('clicked'), 200);
+                }
+            });
+            leadDiv.appendChild(deleteAllPhonesBtn);
+
+            // Add "Delete All Emails for this Website" button
+            const deleteAllEmailsBtn = document.createElement('button');
+            deleteAllEmailsBtn.className = 'delete-btn';
+            deleteAllEmailsBtn.textContent = `Delete All Emails for ${lead.website}`;
+            deleteAllEmailsBtn.addEventListener('click', (e) => {
+                if (confirm(`Are you sure you want to delete all emails for ${lead.website}?`)) {
+                    socket.emit('delete-all-emails-for-website', { website: lead.website });
+                    e.target.classList.add('clicked');
+                    setTimeout(() => e.target.classList.remove('clicked'), 200);
+                }
+            });
+            leadDiv.appendChild(deleteAllEmailsBtn);
+
             listContainer.appendChild(leadDiv);
         });
 
