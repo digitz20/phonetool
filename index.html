@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lead Scraper</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        h1 { text-align: center; }
+        #controls { margin-bottom: 20px; text-align: center; }
+        #data-container { display: flex; flex-wrap: wrap; gap: 20px; }
+        .list-container { border: 1px solid #ccc; border-radius: 5px; padding: 15px; width: 300px; }
+        .list-container h2 { margin-top: 0; }
+        .lead { margin-bottom: 10px; }
+        .lead-website { font-weight: bold; }
+        .lead-email { color: #007bff; }
+        .copy-btn, .delete-btn, #copy-all-btn, #copy-all-websites-btn, #copy-all-emails-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        .delete-btn { background-color: #dc3545; }
+        #copy-all-btn { background-color: #28a745; margin-left: 10px;}
+        #copy-all-websites-btn, #copy-all-emails-btn { background-color: #28a745; margin-left: 10px;}
+        .copy-btn:active, .delete-btn:active, #copy-all-btn:active, #copy-all-websites-btn:active, #copy-all-emails-btn:active {
+            transform: translateY(1px);
+        }
+        .copy-btn.clicked, .delete-btn.clicked, #copy-all-btn.clicked, #copy-all-websites-btn.clicked, #copy-all-emails-btn.clicked {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Lead Scraper</h1>
+    <div id="controls">
+        <button id="run-scraper-btn">Run Scraper</button>
+        <button id="copy-all-websites-btn">Copy All Websites</button>
+        <button id="copy-all-emails-btn">Copy All Emails</button>
+    </div>
+    <div id="pagination-controls" style="text-align: center; margin-bottom: 20px;">
+        <button id="prev-page-btn">Previous</button>
+        <span id="page-info"></span>
+        <button id="next-page-btn">Next</button>
+    </div>
+    <div id="data-container"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="renderer.js"></script>
+</body>
+</html>
