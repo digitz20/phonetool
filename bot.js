@@ -1181,20 +1181,89 @@ async function extractEmailsFromWebsite(url, browser, dialingCodeToUse = '') {
           foundEmails.forEach(email => scrapedEmails.add(email)); // Scraped emails are added here
 
           // Regex for phone numbers, including international formats
-          const phoneRegex = /(?:\+?\d{1,3}[-.\s]?)?\(?\d{2,4}\)?[-.\s]?\d{2,4}[-.\s]?\d{2,4}(?:[-.\s]?\d{2,4})?/g;
-          const foundPhoneNumbers = content.match(phoneRegex) || [];
-          foundPhoneNumbers.forEach(phone => {
-            const cleanedPhone = phone.replace(/[^+\d]/g, ''); // Remove all non-digit characters except '+'
-            if (cleanedPhone.length >= 7) { // Only consider numbers with at least 7 digits
-              if (cleanedPhone.startsWith('+')) {
-                scrapedPhoneNumbers.add(cleanedPhone); // Already has country code
-              } else if (dialingCodeToUse) {
-                scrapedPhoneNumbers.add(`${dialingCodeToUse}${cleanedPhone}`); // Prepend dialing code
-              } else {
-                scrapedPhoneNumbers.add(cleanedPhone); // Add as is if no dialing code provided
+          // Regex for phone numbers, including international formats, slightly refined
+          // This regex tries to be more specific to phone number structures
+          // It looks for:
+          // - Optional international prefix (+ or 00 followed by 1-3 digits)
+          // - Followed by optional parentheses around 2-4 digits (area code)
+          // - Then groups of 2-4 digits separated by spaces, dots, or hyphens
+          // - Requires at least 7 digits in total (checked after cleaning)
+          const phoneRegex = /(?:(?:\+|00)\d{1,3}[\s.-]?)?\(?\d{2,4}\)?(?:[\s.-]?\d{2,4}){2,4}/g;
+
+          const allPotentialPhoneMatches = [];
+          let match;
+          while ((match = phoneRegex.exec(content)) !== null) {
+              allPotentialPhoneMatches.push({
+                  value: match[0],
+                  index: match.index
+              });
+          }
+
+          const negativePhoneKeywords = ['fax', 'date', 'time', 'year', 'month', 'day', 'birth', 'expiry', 'valid', 'since', 'until', 'from', 'to', 'product id', 'order id', 'invoice id', 'reference number', 'serial number', 'version', 'code', 'zip code', 'post code'];
+
+          for (const potentialPhone of allPotentialPhoneMatches) {
+              const phone = potentialPhone.value;
+              const index = potentialPhone.index;
+
+              // Extract a snippet of text before and after the phone number to check for negative keywords
+              const preText = content.substring(Math.max(0, index - 50), index).toLowerCase(); // Check up to 50 chars before
+              const postText = content.substring(index + phone.length, Math.min(content.length, index + phone.length + 50)).toLowerCase(); // Check up to 50 chars after
+
+              let isIrrelevantContext = false;
+              for (const keyword of negativePhoneKeywords) {
+                  if (preText.includes(keyword) || postText.includes(keyword)) {
+                      isIrrelevantContext = true;
+                      break;
+                  }
               }
-            }
-          });
+
+              if (isIrrelevantContext) {
+                  console.log(`[DEBUG] Skipping potential phone number due to irrelevant context: "${phone}" (Context: "...${preText.slice(-20)}...${postText.slice(0, 20)}")`);
+                  continue; // Skip this phone number
+              }
+
+              const cleanedPhone = phone.replace(/[^+\d]/g, ''); // Remove all non-digit characters except '+'
+
+              // Further validation:
+              // 1. Check length: typical phone numbers are between 7 and 15 digits (excluding '+')
+              const minPhoneLength = 7;
+              const maxPhoneLength = 15; // Max length for a typical phone number after cleaning
+              const phoneDigits = cleanedPhone.startsWith('+') ? cleanedPhone.substring(1) : cleanedPhone;
+
+              if (phoneDigits.length < minPhoneLength || phoneDigits.length > maxPhoneLength) {
+                  console.log(`[DEBUG] Skipping potential phone number due to invalid length: "${phone}" (Cleaned: "${cleanedPhone}", Digits: ${phoneDigits.length})`);
+                  continue;
+              }
+
+              // 2. Check for common date patterns within the cleaned number (e.g., 20231225, 12252023)
+              // This is a heuristic and might still miss some, but helps.
+              // More robust date check: YYYYMMDD or MMDDYYYY
+              if (/^(19|20)\d{6}$/.test(phoneDigits) || /^\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{4}$/.test(phoneDigits)) {
+                  console.log(`[DEBUG] Skipping potential phone number due to date-like pattern: "${phone}" (Cleaned: "${cleanedPhone}")`);
+                  continue;
+              }
+
+              // 3. Exclude numbers that are clearly years (e.g., 19XX, 20XX) if they are exactly 4 digits
+              if (phoneDigits.length === 4 && /^(19|20)\d{2}$/.test(phoneDigits)) {
+                  console.log(`[DEBUG] Skipping potential phone number as it looks like a year: "${phone}" (Cleaned: "${cleanedPhone}")`);
+                  continue;
+              }
+
+
+              if (cleanedPhone.startsWith('+')) {
+                  scrapedPhoneNumbers.add(cleanedPhone); // Already has country code
+              } else if (dialingCodeToUse) {
+                  // Prepend dialing code only if the number doesn't look like a local short code (e.g., 911)
+                  // and if it's not already a full international number (which should have been caught by startsWith('+'))
+                  if (cleanedPhone.length > 5) { // Heuristic: don't prepend to very short numbers
+                      scrapedPhoneNumbers.add(`${dialingCodeToUse}${cleanedPhone}`); // Prepend dialing code
+                  } else {
+                      scrapedPhoneNumbers.add(cleanedPhone); // Add as is if too short for prepending
+                  }
+              } else {
+                  scrapedPhoneNumbers.add(cleanedPhone); // Add as is if no dialing code provided
+              }
+          }
 
 
           const links = await page.$$eval('a', as => as.map(a => a.href));

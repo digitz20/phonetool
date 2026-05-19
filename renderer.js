@@ -13,6 +13,13 @@ let allLeads = [];
 let currentPage = 1;
 const leadsPerPage = 10;
 
+// Load leads from localStorage on startup
+const storedLeads = localStorage.getItem('allLeads');
+if (storedLeads) {
+    allLeads = JSON.parse(storedLeads);
+    renderLeads();
+}
+
 function renderLeads() {
     dataContainer.innerHTML = '';
     const lists = {};
@@ -31,6 +38,8 @@ function renderLeads() {
         }
         lists[lead.industry].push(lead);
     });
+    
+    
 
     for (const industry in lists) {
         const industryLeads = lists[industry];
@@ -188,6 +197,7 @@ copyAllEmailsBtn.addEventListener('click', (e) => {
 socket.on('initial-leads', (leads) => {
     console.log('Received initial-leads:', leads);
     allLeads = leads;
+    localStorage.setItem('allLeads', JSON.stringify(allLeads));
     renderLeads();
 });
 
@@ -197,8 +207,12 @@ socket.on('new-lead', (lead) => {
         lead.emails = lead.email ? [lead.email] : [];
     }
     allLeads.unshift(lead);
+    localStorage.setItem('allLeads', JSON.stringify(allLeads));
     renderLeads();
 });
+
+
+
 
 socket.on('scraper-running', () => {
     runScraperBtn.disabled = true;
