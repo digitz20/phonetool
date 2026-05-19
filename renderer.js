@@ -139,6 +139,19 @@ function renderLeads() {
             });
             leadDiv.appendChild(deleteAllEmailsBtn);
 
+            // Add "Delete Website" button
+            const deleteWebsiteBtn = document.createElement('button');
+            deleteWebsiteBtn.className = 'delete-btn';
+            deleteWebsiteBtn.textContent = `Delete Website ${lead.website}`;
+            deleteWebsiteBtn.addEventListener('click', (e) => {
+                if (confirm(`Are you sure you want to delete the entire website ${lead.website} and all its associated data? This action cannot be undone.`)) {
+                    socket.emit('delete-website', { website: lead.website });
+                    e.target.classList.add('clicked');
+                    setTimeout(() => e.target.classList.remove('clicked'), 200);
+                }
+            });
+            leadDiv.appendChild(deleteWebsiteBtn);
+
             listContainer.appendChild(leadDiv);
         });
 

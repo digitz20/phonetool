@@ -135,6 +135,22 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('delete-website', async ({ website }) => {
+        console.log(`Received request to delete website: ${website}`);
+        let leads = await loadLeads();
+
+        const initialLeadsCount = leads.length;
+        leads = leads.filter(lead => lead.website !== website);
+
+        if (leads.length < initialLeadsCount) {
+            await saveLeads(leads);
+            io.emit('leads-updated', leads);
+            console.log(`Website ${website} and all its data deleted.`);
+        } else {
+            console.log(`Website ${website} not found. No changes made.`);
+        }
+    });
+
     socket.on('disconnect', () => {
         console.log('user disconnected');
     });
