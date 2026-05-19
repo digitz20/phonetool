@@ -44,7 +44,7 @@ function renderLeads() {
         industryLeads.forEach(lead => {
             const leadDiv = document.createElement('div');
             leadDiv.className = 'lead';
-            leadDiv.innerHTML = `<span class="lead-website">${lead.website}</span><br><span class="lead-email">${lead.emails.join(', ')}</span>`;
+            leadDiv.innerHTML = `<span class="lead-website">${lead.website}</span><br><span class="lead-email">${lead.emails.join(', ')}</span><br><span class="lead-phone">${lead.phoneNumbers.join(', ')}</span>`;
             listContainer.appendChild(leadDiv);
         });
 

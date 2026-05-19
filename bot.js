@@ -1820,20 +1820,27 @@ async function main(io) {
         }
         const websites = await getWebsitesByIndustry(industry, browser, countryCode, dialingCodeToUse);
         console.log(`Found ${websites.length} websites for industry ${industry} in country ${countryCode}.`);
-        allWebsitesForCurrentBatch.push(...websites);
+        allWebsitesForCurrentBatch.push(...websites.map(w => ({ website: w, dialingCode: dialingCodeToUse })));
       }
 
       // Remove duplicates from allWebsitesForCurrentBatch
-      const uniqueWebsitesForCurrentBatch = [...new Set(allWebsitesForCurrentBatch)];
+      const uniqueWebsitesForCurrentBatch = [];
+      const seenWebsites = new Set();
+      for (const item of allWebsitesForCurrentBatch) {
+        if (!seenWebsites.has(item.website)) {
+          seenWebsites.add(item.website);
+          uniqueWebsitesForCurrentBatch.push(item);
+        }
+      }
       console.log(`Total unique websites found for industry ${industry} in this batch: ${uniqueWebsitesForCurrentBatch.length}`);
 
-      for (const website of uniqueWebsitesForCurrentBatch) {
+      for (const { website, dialingCode } of uniqueWebsitesForCurrentBatch) {
         if (leads.some(l => l.website === website)) {
           console.log(`Skipping already processed website: ${website}`);
           continue;
         }
 
-        const { emails, phoneNumbers, domain, companyName, scrapedPeople, sender } = await extractEmailsFromWebsite(website, browser, dialingCodeToUse);
+        const { emails, phoneNumbers, domain, companyName, scrapedPeople, sender } = await extractEmailsFromWebsite(website, browser, dialingCode);
         // A lead is valid if we found any emails (scraped or Apollo) or Apollo contacts
         if (emails.length > 0 || phoneNumbers.length > 0 || scrapedPeople.length > 0) {
           const lead = {
