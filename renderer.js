@@ -44,7 +44,66 @@ function renderLeads() {
         industryLeads.forEach(lead => {
             const leadDiv = document.createElement('div');
             leadDiv.className = 'lead';
-            leadDiv.innerHTML = `<span class="lead-website">${lead.website}</span><br><span class="lead-email">${lead.emails.join(', ')}</span><br><span class="lead-phone">${lead.phoneNumbers.join(', ')}</span>`;
+
+            const websiteSpan = document.createElement('span');
+            websiteSpan.className = 'lead-website';
+            websiteSpan.textContent = lead.website;
+            leadDiv.appendChild(websiteSpan);
+            leadDiv.appendChild(document.createElement('br'));
+
+            const emailsLabel = document.createElement('strong');
+            emailsLabel.textContent = 'Emails:';
+            leadDiv.appendChild(emailsLabel);
+            leadDiv.appendChild(document.createElement('br'));
+
+            lead.emails.forEach(email => {
+                const emailSpan = document.createElement('span');
+                emailSpan.className = 'lead-email';
+                emailSpan.textContent = email;
+                leadDiv.appendChild(emailSpan);
+                leadDiv.appendChild(document.createElement('br'));
+            });
+
+            const phoneNumbersLabel = document.createElement('strong');
+            phoneNumbersLabel.textContent = 'Phone Numbers:';
+            leadDiv.appendChild(phoneNumbersLabel);
+            leadDiv.appendChild(document.createElement('br'));
+
+            lead.phoneNumbers.forEach(number => {
+                const phoneEntryDiv = document.createElement('div');
+                phoneEntryDiv.className = 'phone-entry';
+
+                const phoneSpan = document.createElement('span');
+                phoneSpan.className = 'lead-phone';
+                phoneSpan.textContent = number;
+                phoneEntryDiv.appendChild(phoneSpan);
+
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'copy-number-btn';
+                copyBtn.textContent = 'Copy';
+                copyBtn.addEventListener('click', (e) => {
+                    navigator.clipboard.writeText(number);
+                    e.target.classList.add('clicked');
+                    setTimeout(() => e.target.classList.remove('clicked'), 200);
+                });
+                phoneEntryDiv.appendChild(copyBtn);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-number-btn';
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.addEventListener('click', (e) => {
+                    // This will require server-side logic to actually delete from leads.json
+                    // For now, it will just log the action.
+                    console.log(`Attempting to delete number: ${number} from website: ${lead.website}`);
+                    socket.emit('delete-phone-number', { website: lead.website, number: number });
+                    e.target.classList.add('clicked');
+                    setTimeout(() => e.target.classList.remove('clicked'), 200);
+                });
+                phoneEntryDiv.appendChild(deleteBtn);
+
+                leadDiv.appendChild(phoneEntryDiv);
+            });
+
             listContainer.appendChild(leadDiv);
         });
 
