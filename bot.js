@@ -1051,7 +1051,22 @@ async function getWebsitesByIndustry(industry, browser, countryCode = null, dial
         query += ` "${dialingCode}"`;
       }
       const searchUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
-      await page.goto(searchUrl, { waitUntil: 'domcontentloaded', timeout: 90000 });
+      const maxRetries = 3;
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          await page.goto(searchUrl, { waitUntil: 'domcontentloaded', timeout: 90000 });
+          break; // If successful, break out of the retry loop
+        } catch (error) {
+          console.error(`Attempt ${attempt} failed for TLD ${tld} (${searchUrl}): ${error.message}`);
+          if (attempt < maxRetries) {
+            const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
+            console.log(`Retrying in ${delay / 1000} seconds...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+          } else {
+            throw error; // Re-throw error if all retries fail
+          }
+        }
+      }
 
       // Selector for the HTML version
       const links = await page.$$eval('a.result__a', anchors =>
