@@ -1792,7 +1792,7 @@ function isValidName(name, title, irrelevantPhrases) {
 
 
 // ---------- MAIN BOT ----------
-async function main(io) {
+async function main(io, loadLeads, saveLeads) {
 
 
   const shuffledIndustries = shuffleArray([...CONFIG.industries]);
@@ -1819,7 +1819,7 @@ async function main(io) {
 
   while (true) {
     try {
-      const leads = loadLeads();
+      const leads = await loadLeads(); // Await the promise here
       console.log(`Loaded ${leads.length} existing leads.`);
 
       const industries = shuffledIndustries;

@@ -192,13 +192,13 @@ server.listen(PORT, () => {
     console.log(`listening on *:${PORT}`);
     console.log('Server started and bot main function is about to be called.');
     // Initial call to start the bot immediately
-    main(io);
+    main(io, loadLeads, saveLeads);
     // Schedule the bot to run every 1hour (3600000 1hour)
     setInterval(() => {
         if (!isBotRunning) {
             console.log('Running bot main function on schedule...');
             isBotRunning = true;
-            main(io).finally(() => {
+            main(io, loadLeads, saveLeads).finally(() => {
                 isBotRunning = false;
             });
         } else {
