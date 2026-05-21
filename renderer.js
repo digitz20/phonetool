@@ -327,4 +327,4 @@ socket.on('connect_error', (error) => {
 setInterval(() => {
     console.log('Requesting latest leads from server...');
     socket.emit('request-latest-leads');
-}, 420000); // 7 minutes * 60 seconds/minute * 1000 ms/second
+}, 180000); // 7 minutes * 60 seconds/minute * 1000 ms/second
