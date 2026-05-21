@@ -1814,7 +1814,7 @@ function isValidName(name, title, irrelevantPhrases) {
 
 
 // ---------- MAIN BOT ----------
-async function main(io) {
+async function main(io, loadLeads, saveLeads) {
 
 
   const shuffledIndustries = shuffleArray([...CONFIG.industries]);
