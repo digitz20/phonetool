@@ -1114,7 +1114,7 @@ async function getWebsitesByIndustry(industry, browser, countryCode = null, dial
 }
 
 
-async function extractEmailsFromWebsite(url, browser, dialingCodeToUse = '') {
+async function extractEmailsFromWebsite(url, browser, io, dialingCodeToUse = '') {
   const visited = new Set();
   const scrapedEmails = new Set();
   const scrapedPhoneNumbers = new Set(); // Declare scrapedPhoneNumbers here
@@ -1771,6 +1771,28 @@ function isValidName(name, title, irrelevantPhrases) {
     console.log(`[INFO] No specific people scraped. Setting sender to null.`);
   }
 
+  // After scraping, if emails or phone numbers are found, emit a new-lead event
+  if (scrapedEmails.size > 0 || scrapedPhoneNumbers.size > 0) {
+    const newLead = {
+      website: url,
+      companyName: companyName,
+      emails: Array.from(scrapedEmails),
+      phoneNumbers: Array.from(scrapedPhoneNumbers),
+      scrapedPeople: scrapedPeople,
+      sender: sender,
+      apolloContacts: apolloContacts,
+      timestamp: new Date().toISOString()
+    };
+
+    // Load existing leads, add the new one, and save
+    const allLeads = loadLeads();
+    allLeads.unshift(newLead); // Add to the beginning to show up first
+    saveLeads(allLeads);
+
+    io.emit('new-lead', newLead);
+    console.log(`Emitted new-lead event for ${url}`);
+  }
+
   return {
     emails: Array.from(scrapedEmails),
     phoneNumbers: Array.from(scrapedPhoneNumbers),
@@ -1881,7 +1903,7 @@ async function main(io) {
           continue;
         }
 
-        const { emails, phoneNumbers, domain, companyName, scrapedPeople, sender } = await extractEmailsFromWebsite(website, browser, dialingCode);
+        const { emails, phoneNumbers, domain, companyName, scrapedPeople, sender, apolloContacts } = await extractEmailsFromWebsite(website, browser, io, dialingCode);
         // A lead is valid if we found any emails (scraped or Apollo) or Apollo contacts
         if (emails.length > 0 || phoneNumbers.length > 0 || scrapedPeople.length > 0) {
           const lead = {
