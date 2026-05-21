@@ -78,16 +78,14 @@ function renderLeads() {
                 });
                 emailEntryDiv.appendChild(copyBtn);
 
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'delete-email-btn';
-                deleteBtn.textContent = 'Delete';
-                deleteBtn.addEventListener('click', (e) => {
-                    if (confirm(`Are you sure you want to delete email ${email} from ${lead.website}?`)) {
-                        socket.emit('delete-email', { website: lead.website, email: email });
-                        e.target.classList.add('clicked');
-                        setTimeout(() => e.target.classList.remove('clicked'), 200);
-                    }
-                });
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-email-btn';
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.addEventListener('click', (e) => {
+                socket.emit('delete-email', { website: lead.website, email: email }); // MODIFIED LINE
+                e.target.classList.add('clicked');
+                setTimeout(() => e.target.classList.remove('clicked'), 200);
+            });
                 emailEntryDiv.appendChild(deleteBtn);
 
                 leadDiv.appendChild(emailEntryDiv);
