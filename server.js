@@ -111,6 +111,31 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('delete-email', async ({ website, email }) => {
+        console.log(`Received request to delete email: ${email} from website: ${website}`);
+        let leads = await loadLeads();
+
+        let leadFound = false;
+        leads = leads.map(lead => {
+            if (lead.website === website) {
+                const initialEmailsCount = lead.emails.length;
+                lead.emails = lead.emails.filter(e => e !== email);
+                if (lead.emails.length < initialEmailsCount) {
+                    leadFound = true;
+                    console.log(`Deleted email ${email} from ${website}. Remaining emails: ${lead.emails.length}`);
+                }
+            }
+            return lead;
+        });
+
+        if (leadFound) {
+            await saveLeads(leads);
+            io.emit('leads-updated', leads);
+        } else {
+            console.log(`Email ${email} not found for website ${website}. No changes made.`);
+        }
+    });
+
     socket.on('delete-all-emails-for-website', async ({ website }) => {
         console.log(`Received request to delete all emails for website: ${website}`);
         let leads = await loadLeads();

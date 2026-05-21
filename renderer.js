@@ -66,12 +66,63 @@ function renderLeads() {
             leadDiv.appendChild(document.createElement('br'));
 
             lead.emails.forEach(email => {
+                const emailEntryDiv = document.createElement('div');
+                emailEntryDiv.className = 'email-entry';
+
                 const emailSpan = document.createElement('span');
                 emailSpan.className = 'lead-email';
                 emailSpan.textContent = email;
-                leadDiv.appendChild(emailSpan);
-                leadDiv.appendChild(document.createElement('br'));
+                emailEntryDiv.appendChild(emailSpan);
+
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'copy-email-btn';
+                copyBtn.textContent = 'Copy';
+                copyBtn.addEventListener('click', (e) => {
+                    navigator.clipboard.writeText(email);
+                    e.target.classList.add('clicked');
+                    setTimeout(() => e.target.classList.remove('clicked'), 200);
+                });
+                emailEntryDiv.appendChild(copyBtn);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-email-btn';
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.addEventListener('click', (e) => {
+                    if (confirm(`Are you sure you want to delete email ${email} from ${lead.website}?`)) {
+                        socket.emit('delete-email', { website: lead.website, email: email });
+                        e.target.classList.add('clicked');
+                        setTimeout(() => e.target.classList.remove('clicked'), 200);
+                    }
+                });
+                emailEntryDiv.appendChild(deleteBtn);
+
+                leadDiv.appendChild(emailEntryDiv);
             });
+
+            // Add "Copy All Emails for this Website" button
+            const copyAllEmailsForWebsiteBtn = document.createElement('button');
+            copyAllEmailsForWebsiteBtn.className = 'copy-btn';
+            copyAllEmailsForWebsiteBtn.textContent = `Copy All Emails for ${lead.website}`;
+            copyAllEmailsForWebsiteBtn.addEventListener('click', (e) => {
+                const textToCopy = lead.emails.join('\n');
+                navigator.clipboard.writeText(textToCopy);
+                e.target.classList.add('clicked');
+                setTimeout(() => e.target.classList.remove('clicked'), 200);
+            });
+            leadDiv.appendChild(copyAllEmailsForWebsiteBtn);
+
+            // Add "Delete All Emails for this Website" button
+            const deleteAllEmailsForWebsiteBtn = document.createElement('button');
+            deleteAllEmailsForWebsiteBtn.className = 'delete-btn';
+            deleteAllEmailsForWebsiteBtn.textContent = `Delete All Emails for ${lead.website}`;
+            deleteAllEmailsForWebsiteBtn.addEventListener('click', (e) => {
+                if (confirm(`Are you sure you want to delete all emails for ${lead.website}?`)) {
+                    socket.emit('delete-all-emails-for-website', { website: lead.website });
+                    e.target.classList.add('clicked');
+                    setTimeout(() => e.target.classList.remove('clicked'), 200);
+                }
+            });
+            leadDiv.appendChild(deleteAllEmailsForWebsiteBtn);
 
             const phoneNumbersLabel = document.createElement('strong');
             phoneNumbersLabel.textContent = 'Phone Numbers:';
