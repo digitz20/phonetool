@@ -7,6 +7,7 @@ const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 puppeteer.use(StealthPlugin());
 const fs = require('fs');
 const path = require('path');
+const { parsePhoneNumberFromString } = require('libphonenumber-js');
 
 
 // Global state for staggered search
@@ -1181,13 +1182,6 @@ async function extractEmailsFromWebsite(url, browser, dialingCodeToUse = '') {
           foundEmails.forEach(email => scrapedEmails.add(email)); // Scraped emails are added here
 
           // Regex for phone numbers, including international formats
-          // Regex for phone numbers, including international formats, slightly refined
-          // This regex tries to be more specific to phone number structures
-          // It looks for:
-          // - Optional international prefix (+ or 00 followed by 1-3 digits)
-          // - Followed by optional parentheses around 2-4 digits (area code)
-          // - Then groups of 2-4 digits separated by spaces, dots, or hyphens
-          // - Requires at least 7 digits in total (checked after cleaning)
           const phoneRegex = /(?:(?:\+|00)\d{1,3}[\s.-]?)?\(?\d{2,4}\)?(?:[\s.-]?\d{2,4}){2,4}/g;
 
           const allPotentialPhoneMatches = [];
@@ -1222,46 +1216,24 @@ async function extractEmailsFromWebsite(url, browser, dialingCodeToUse = '') {
                   continue; // Skip this phone number
               }
 
-              const cleanedPhone = phone.replace(/[^+\d]/g, ''); // Remove all non-digit characters except '+'
-
-              // Further validation:
-              // 1. Check length: typical phone numbers are between 7 and 15 digits (excluding '+')
-              const minPhoneLength = 7;
-              const maxPhoneLength = 15; // Max length for a typical phone number after cleaning
-              const phoneDigits = cleanedPhone.startsWith('+') ? cleanedPhone.substring(1) : cleanedPhone;
-
-              if (phoneDigits.length < minPhoneLength || phoneDigits.length > maxPhoneLength) {
-                  console.log(`[DEBUG] Skipping potential phone number due to invalid length: "${phone}" (Cleaned: "${cleanedPhone}", Digits: ${phoneDigits.length})`);
-                  continue;
-              }
-
-              // 2. Check for common date patterns within the cleaned number (e.g., 20231225, 12252023)
-              // This is a heuristic and might still miss some, but helps.
-              // More robust date check: YYYYMMDD or MMDDYYYY
-              if (/^(19|20)\d{6}$/.test(phoneDigits) || /^\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{4}$/.test(phoneDigits)) {
-                  console.log(`[DEBUG] Skipping potential phone number due to date-like pattern: "${phone}" (Cleaned: "${cleanedPhone}")`);
-                  continue;
-              }
-
-              // 3. Exclude numbers that are clearly years (e.g., 19XX, 20XX) if they are exactly 4 digits
-              if (phoneDigits.length === 4 && /^(19|20)\d{2}$/.test(phoneDigits)) {
-                  console.log(`[DEBUG] Skipping potential phone number as it looks like a year: "${phone}" (Cleaned: "${cleanedPhone}")`);
-                  continue;
-              }
-
-
-              if (cleanedPhone.startsWith('+')) {
-                  scrapedPhoneNumbers.add(cleanedPhone); // Already has country code
-              } else if (dialingCodeToUse) {
-                  // Prepend dialing code only if the number doesn't look like a local short code (e.g., 911)
-                  // and if it's not already a full international number (which should have been caught by startsWith('+'))
-                  if (cleanedPhone.length > 5) { // Heuristic: don't prepend to very short numbers
-                      scrapedPhoneNumbers.add(`${dialingCodeToUse}${cleanedPhone}`); // Prepend dialing code
-                  } else {
-                      scrapedPhoneNumbers.add(cleanedPhone); // Add as is if too short for prepending
+              // Use libphonenumber-js for robust validation
+              let phoneNumber;
+              try {
+                  // Try parsing with the provided dialingCodeToUse as default country
+                  phoneNumber = parsePhoneNumberFromString(phone, dialingCodeToUse || 'US'); // Default to 'US' if no dialingCodeToUse
+                  if (!phoneNumber || !phoneNumber.isValid()) {
+                      // If not valid with default country, try parsing without a default country
+                      phoneNumber = parsePhoneNumberFromString(phone);
                   }
+              } catch (e) {
+                  // console.log(`[DEBUG] libphonenumber-js parsing error for "${phone}": ${e.message}`);
+                  continue; // Skip if parsing fails
+              }
+
+              if (phoneNumber && phoneNumber.isValid()) {
+                  scrapedPhoneNumbers.add(phoneNumber.formatInternational());
               } else {
-                  scrapedPhoneNumbers.add(cleanedPhone); // Add as is if no dialing code provided
+                  console.log(`[DEBUG] Skipping invalid phone number after libphonenumber-js validation: "${phone}"`);
               }
           }
 
