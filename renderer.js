@@ -13,13 +13,6 @@ let allLeads = [];
 let currentPage = 1;
 const leadsPerPage = 10;
 
-// Load leads from localStorage on startup
-const storedLeads = localStorage.getItem('allLeads');
-if (storedLeads) {
-    allLeads = JSON.parse(storedLeads);
-    renderLeads();
-}
-
 function renderLeads() {
     dataContainer.innerHTML = '';
     const lists = {};
@@ -316,6 +309,7 @@ socket.on('scraper-done', () => {
 
 socket.on('leads-updated', (leads) => {
     allLeads = leads;
+    localStorage.setItem('allLeads', JSON.stringify(allLeads)); // Added this line
     renderLeads();
 });
 
