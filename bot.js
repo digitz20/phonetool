@@ -1114,7 +1114,7 @@ async function getWebsitesByIndustry(industry, browser, countryCode = null, dial
 }
 
 
-async function extractEmailsFromWebsite(url, browser, io, loadLeads, saveLeads, dialingCodeToUse = '') {
+async function extractEmailsFromWebsite(url, browser, io, dialingCodeToUse = '') {
   const visited = new Set();
   const scrapedEmails = new Set();
   const scrapedPhoneNumbers = new Set(); // Declare scrapedPhoneNumbers here
@@ -1903,7 +1903,7 @@ async function main(io, loadLeads, saveLeads) {
           continue;
         }
 
-        const { emails, phoneNumbers, domain, companyName, scrapedPeople, sender, apolloContacts } = await extractEmailsFromWebsite(website, browser, io, loadLeads, saveLeads, dialingCode);
+        const { emails, phoneNumbers, domain, companyName, scrapedPeople, sender, apolloContacts } = await extractEmailsFromWebsite(website, browser, io, dialingCode);
         // A lead is valid if we found any emails (scraped or Apollo) or Apollo contacts
         if (emails.length > 0 || phoneNumbers.length > 0 || scrapedPeople.length > 0) {
           const lead = {
