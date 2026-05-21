@@ -46,7 +46,7 @@ function renderLeads() {
         industryLeads.forEach(lead => {
             const leadDiv = document.createElement('div');
             leadDiv.className = 'lead';
-            leadDiv.style.marginBottom = '20px';
+            leadDiv.style.marginBottom = '35px';
 
             const websiteSpan = document.createElement('span');
             websiteSpan.className = 'lead-website';
