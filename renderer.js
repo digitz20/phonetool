@@ -324,3 +324,9 @@ socket.on('connect_error', (error) => {
     console.error('Socket connection error:', error);
     // You might want to display an error message to the user
 });
+
+// Periodically request latest leads from the server every 7 minutes (420000 ms)
+setInterval(() => {
+    console.log('Requesting latest leads from server...');
+    socket.emit('request-latest-leads');
+}, 420000); // 7 minutes * 60 seconds/minute * 1000 ms/second

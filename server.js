@@ -176,6 +176,12 @@ io.on('connection', (socket) => {
         }
     });
 
+        socket.on('request-latest-leads', async () => {
+        console.log('Client requested latest leads.');
+        const leads = await loadLeads();
+        socket.emit('leads-updated', leads); // Emit to the requesting client
+    });
+
     socket.on('disconnect', () => {
         console.log('user disconnected');
     });
