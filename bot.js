@@ -20,25 +20,7 @@ const DELAY_BETWEEN_BATCHES_MS = 60 * 1000; // 1 minute delay between batches
 
 
 
-// Function to load leads from leads.json
-function loadLeads() {
-  try {
-    const data = fs.readFileSync(path.join(__dirname, 'leads.json'), 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error('Error loading leads.json:', error);
-    return [];
-  }
-}
 
-// Function to save leads to leads.json
-function saveLeads(leads) {
-  try {
-    fs.writeFileSync(path.join(__dirname, 'leads.json'), JSON.stringify(leads, null, 2), 'utf8');
-  } catch (error) {
-    console.error('Error saving leads.json:', error);
-  }
-}
 
 // Helper function to format email local part as a name
 function formatEmailLocalPartAsName(email) {
@@ -937,22 +919,8 @@ function getJobTitleScore(title) {
 }
 
 // ---------- UTILITY FUNCTIONS ----------
-function loadLeads() {
-  if (!fs.existsSync(CONFIG.dataFile)) {
-    fs.writeFileSync(CONFIG.dataFile, JSON.stringify([], null, 2));
-    return [];
-  }
-  try {
-    const data = fs.readFileSync(CONFIG.dataFile, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error('Error reading or parsing leads.json:', error);
-    // If the file is corrupted, back it up and start with a fresh one
-    fs.renameSync(CONFIG.dataFile, `${CONFIG.dataFile}.bak`);
-    fs.writeFileSync(CONFIG.dataFile, JSON.stringify([], null, 2));
-    return [];
-  }
-}
+
+
 
 
 
@@ -1912,7 +1880,7 @@ async function main(io, loadLeads, saveLeads) {
 
           };
           leads.unshift(lead);
-          saveLeads(leads);
+          await saveLeads(leads);
           console.log(`Saved new lead for ${website}. Total leads: ${leads.length}`); // Added log
           io.emit('new-lead', lead);
         } else {
