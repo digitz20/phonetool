@@ -58,7 +58,8 @@ function getMultipleRandomCountryCodes(count = 1) {
 // ---------- CONFIG ----------
 const CONFIG = {
   manualCountryCodesForSearch: ['CN', 'GB', 'QA', 'DE', 'RU', 'VN', 'TR', 'IT', 'FR',
-     'JP', 'US', 'CA', 'AE', 'ID', 'TH', 'KR', 'AU', 'SG', 'HK', 'AT', 'BR'], // Manually set country codes for search
+     'JP', 'US', 'CA', 'AE', 'ID', 'TH', 'KR', 'AU', 'SG', 'HK', 'AT', 'BR',
+      'SA', 'SK', 'CZ', 'RO', 'LI', 'ES'], // Manually set country codes for search
 
   industries: [
     'Agriculture', 'Apparel', 'Banking', 'Biotechnology', 'Chemical', 'Communications', 'Construction',

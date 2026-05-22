@@ -193,7 +193,7 @@ server.listen(PORT, () => {
     console.log('Server started and bot main function is about to be called.');
     // Initial call to start the bot immediately
     main(io, loadLeads, saveLeads);
-    // Schedule the bot to run every 1hour (3600000 1hour)
+    // Schedule the bot to run every 30mins (1800000 30mins)
     setInterval(() => {
         if (!isBotRunning) {
             console.log('Running bot main function on schedule...');
@@ -204,5 +204,5 @@ server.listen(PORT, () => {
         } else {
             console.log('Bot is still running, skipping this interval.');
         }
-    }, 3600000);
+    }, 1800000);
 });
