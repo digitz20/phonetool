@@ -100,7 +100,14 @@ function renderLeads() {
             deleteBtn.className = 'delete-email-btn';
             deleteBtn.textContent = 'Delete';
             deleteBtn.addEventListener('click', (e) => {
-                socket.emit('delete-email', { website: lead.website, email: email }); // MODIFIED LINE
+                socket.emit('delete-email', { website: lead.website, email: email });
+                // Update local storage
+                const leadIndex = allLeads.findIndex(l => l.website === lead.website);
+                if (leadIndex > -1) {
+                    allLeads[leadIndex].emails = allLeads[leadIndex].emails.filter(e => e !== email);
+                    localStorage.setItem('allLeads', JSON.stringify(allLeads));
+                    renderLeads();
+                }
                 e.target.classList.add('clicked');
                 setTimeout(() => e.target.classList.remove('clicked'), 200);
             });
@@ -128,6 +135,13 @@ function renderLeads() {
             deleteAllEmailsForWebsiteBtn.addEventListener('click', (e) => {
                 if (confirm(`Are you sure you want to delete all emails for ${lead.website}?`)) {
                     socket.emit('delete-all-emails-for-website', { website: lead.website });
+                    // Update local storage
+                    const leadIndex = allLeads.findIndex(l => l.website === lead.website);
+                    if (leadIndex > -1) {
+                        allLeads[leadIndex].emails = [];
+                        localStorage.setItem('allLeads', JSON.stringify(allLeads));
+                        renderLeads();
+                    }
                     e.target.classList.add('clicked');
                     setTimeout(() => e.target.classList.remove('clicked'), 200);
                 }
@@ -162,10 +176,15 @@ function renderLeads() {
                 deleteBtn.className = 'delete-number-btn';
                 deleteBtn.textContent = 'Delete';
                 deleteBtn.addEventListener('click', (e) => {
-                    // This will require server-side logic to actually delete from leads.json
-                    // For now, it will just log the action.
                     console.log(`Attempting to delete number: ${number} from website: ${lead.website}`);
                     socket.emit('delete-phone-number', { website: lead.website, number: number });
+                    // Update local storage
+                    const leadIndex = allLeads.findIndex(l => l.website === lead.website);
+                    if (leadIndex > -1) {
+                        allLeads[leadIndex].phoneNumbers = allLeads[leadIndex].phoneNumbers.filter(n => n !== number);
+                        localStorage.setItem('allLeads', JSON.stringify(allLeads));
+                        renderLeads();
+                    }
                     e.target.classList.add('clicked');
                     setTimeout(() => e.target.classList.remove('clicked'), 200);
                 });
@@ -181,6 +200,13 @@ function renderLeads() {
             deleteAllPhonesBtn.addEventListener('click', (e) => {
                 if (confirm(`Are you sure you want to delete all phone numbers for ${lead.website}?`)) {
                     socket.emit('delete-all-phones-for-website', { website: lead.website });
+                    // Update local storage
+                    const leadIndex = allLeads.findIndex(l => l.website === lead.website);
+                    if (leadIndex > -1) {
+                        allLeads[leadIndex].phoneNumbers = [];
+                        localStorage.setItem('allLeads', JSON.stringify(allLeads));
+                        renderLeads();
+                    }
                     e.target.classList.add('clicked');
                     setTimeout(() => e.target.classList.remove('clicked'), 200);
                 }
@@ -207,9 +233,20 @@ function renderLeads() {
             deleteWebsiteBtn.addEventListener('click', (e) => {
                 if (confirm(`Are you sure you want to delete the entire website ${lead.website} and all its associated data? This action cannot be undone.`)) {
                     socket.emit('delete-website', { website: lead.website });
-                    e.target.classList.add('clicked');
-                    setTimeout(() => e.target.classList.remove('clicked'), 200);
+                    // Update local storage
+                    allLeads = allLeads.filter(l => l.website !== lead.website);
+                    localStorage.setItem('allLeads', JSON.stringify(allLeads));
+                    renderLeads();
+                    // Adjust current page if necessary
+                    const totalPages = Math.ceil(allLeads.length / leadsPerPage);
+                    if (currentPage > totalPages && totalPages > 0) {
+                        currentPage = totalPages;
+                    } else if (totalPages === 0) {
+                        currentPage = 1;
+                    }
                 }
+                e.target.classList.add('clicked');
+                setTimeout(() => e.target.classList.remove('clicked'), 200);
             });
             leadDiv.appendChild(deleteWebsiteBtn);
 
@@ -242,8 +279,19 @@ function renderLeads() {
         deleteBtn.textContent = 'Delete';
         deleteBtn.className = 'delete-btn';
         deleteBtn.addEventListener('click', (e) => {
-            const leadsToDelete = new Set(industryLeads.map(l => l.website));
-            socket.emit('delete-leads', [...leadsToDelete]);
+            const leadsToDeleteWebsites = new Set(industryLeads.map(l => l.website));
+            socket.emit('delete-leads', [...leadsToDeleteWebsites]);
+            // Update local storage
+            allLeads = allLeads.filter(lead => !leadsToDeleteWebsites.has(lead.website));
+            localStorage.setItem('allLeads', JSON.stringify(allLeads));
+            renderLeads();
+            // Adjust current page if necessary
+            const totalPages = Math.ceil(allLeads.length / leadsPerPage);
+            if (currentPage > totalPages && totalPages > 0) {
+                currentPage = totalPages;
+            } else if (totalPages === 0) {
+                currentPage = 1;
+            }
             e.target.classList.add('clicked');
             setTimeout(() => e.target.classList.remove('clicked'), 200);
         });
