@@ -68,7 +68,7 @@ function renderLeads() {
             const websiteSpan = document.createElement('span');
             websiteSpan.className = 'lead-website';
             websiteSpan.textContent = lead.website;
-            // websiteSpan.style.wordBreak = 'break-all';
+            websiteSpan.style.wordBreak = 'break-all';
             leadDiv.appendChild(websiteSpan);
             leadDiv.appendChild(document.createElement('br'));
 
