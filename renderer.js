@@ -9,9 +9,26 @@ const prevPageBtn = document.getElementById('prev-page-btn');
 const nextPageBtn = document.getElementById('next-page-btn');
 const pageInfo = document.getElementById('page-info');
 
-let allLeads = [];
+let allLeads = JSON.parse(localStorage.getItem('allLeads')) || [];
 let currentPage = 1;
 const leadsPerPage = 10;
+
+function mergeLeads(newLeads) {
+    newLeads.forEach(newLead => {
+        const existingLeadIndex = allLeads.findIndex(lead => lead.website === newLead.website);
+        if (existingLeadIndex > -1) {
+            // Update existing lead
+            allLeads[existingLeadIndex] = { ...allLeads[existingLeadIndex], ...newLead };
+        } else {
+            // Add new lead
+            allLeads.push(newLead);
+        }
+    });
+    // Sort leads by scrapedAt in descending order (most recent first)
+    allLeads.sort((a, b) => new Date(b.scrapedAt) - new Date(a.scrapedAt));
+    localStorage.setItem('allLeads', JSON.stringify(allLeads));
+    renderLeads();
+}
 
 function renderLeads() {
     dataContainer.innerHTML = '';
@@ -279,9 +296,7 @@ copyAllEmailsBtn.addEventListener('click', (e) => {
 
 socket.on('initial-leads', (leads) => {
     console.log('Received initial-leads:', leads);
-    allLeads = leads;
-    localStorage.setItem('allLeads', JSON.stringify(allLeads));
-    renderLeads();
+    mergeLeads(leads);
 });
 
 socket.on('new-lead', (lead) => {
@@ -289,7 +304,14 @@ socket.on('new-lead', (lead) => {
     if (!lead.emails) {
         lead.emails = lead.email ? [lead.email] : [];
     }
-    allLeads.unshift(lead);
+    const existingLeadIndex = allLeads.findIndex(l => l.website === lead.website);
+    if (existingLeadIndex > -1) {
+        allLeads[existingLeadIndex] = { ...allLeads[existingLeadIndex], ...lead };
+    } else {
+        allLeads.unshift(lead);
+    }
+    // Sort leads by scrapedAt in descending order (most recent first)
+    allLeads.sort((a, b) => new Date(b.scrapedAt) - new Date(a.scrapedAt));
     localStorage.setItem('allLeads', JSON.stringify(allLeads));
     renderLeads();
 });
@@ -308,9 +330,8 @@ socket.on('scraper-done', () => {
 });
 
 socket.on('leads-updated', (leads) => {
-    allLeads = leads;
-    localStorage.setItem('allLeads', JSON.stringify(allLeads)); // Added this line
-    renderLeads();
+    console.log('Received leads-updated:', leads);
+    mergeLeads(leads);
 });
 
 // Add client-side Socket.io error handling
