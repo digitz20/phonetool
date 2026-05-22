@@ -20,7 +20,25 @@ const DELAY_BETWEEN_BATCHES_MS = 60 * 1000; // 1 minute delay between batches
 
 
 
+// Function to load leads from leads.json
+function loadLeads() {
+  try {
+    const data = fs.readFileSync(path.join(__dirname, 'leads.json'), 'utf8');
+    return JSON.parse(data);
+  } catch (error) {
+    console.error('Error loading leads.json:', error);
+    return [];
+  }
+}
 
+// Function to save leads to leads.json
+function saveLeads(leads) {
+  try {
+    fs.writeFileSync(path.join(__dirname, 'leads.json'), JSON.stringify(leads, null, 2), 'utf8');
+  } catch (error) {
+    console.error('Error saving leads.json:', error);
+  }
+}
 
 // Helper function to format email local part as a name
 function formatEmailLocalPartAsName(email) {
@@ -919,8 +937,22 @@ function getJobTitleScore(title) {
 }
 
 // ---------- UTILITY FUNCTIONS ----------
-
-
+function loadLeads() {
+  if (!fs.existsSync(CONFIG.dataFile)) {
+    fs.writeFileSync(CONFIG.dataFile, JSON.stringify([], null, 2));
+    return [];
+  }
+  try {
+    const data = fs.readFileSync(CONFIG.dataFile, 'utf8');
+    return JSON.parse(data);
+  } catch (error) {
+    console.error('Error reading or parsing leads.json:', error);
+    // If the file is corrupted, back it up and start with a fresh one
+    fs.renameSync(CONFIG.dataFile, `${CONFIG.dataFile}.bak`);
+    fs.writeFileSync(CONFIG.dataFile, JSON.stringify([], null, 2));
+    return [];
+  }
+}
 
 
 
@@ -1019,22 +1051,7 @@ async function getWebsitesByIndustry(industry, browser, countryCode = null, dial
         query += ` "${dialingCode}"`;
       }
       const searchUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
-      const maxRetries = 3;
-      for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        try {
-          await page.goto(searchUrl, { waitUntil: 'domcontentloaded', timeout: 90000 });
-          break; // If successful, break out of the retry loop
-        } catch (error) {
-          console.error(`Attempt ${attempt} failed for TLD ${tld} (${searchUrl}): ${error.message}`);
-          if (attempt < maxRetries) {
-            const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
-            console.log(`Retrying in ${delay / 1000} seconds...`);
-            await new Promise(resolve => setTimeout(resolve, delay));
-          } else {
-            throw error; // Re-throw error if all retries fail
-          }
-        }
-      }
+      await page.goto(searchUrl, { waitUntil: 'domcontentloaded', timeout: 90000 });
 
       // Selector for the HTML version
       const links = await page.$$eval('a.result__a', anchors =>
@@ -1775,7 +1792,7 @@ function isValidName(name, title, irrelevantPhrases) {
 
 
 // ---------- MAIN BOT ----------
-async function main(io, loadLeads, saveLeads) {
+async function main(io) {
 
 
   const shuffledIndustries = shuffleArray([...CONFIG.industries]);
@@ -1802,7 +1819,7 @@ async function main(io, loadLeads, saveLeads) {
 
   while (true) {
     try {
-      const leads = await loadLeads(); // Await the promise here
+      const leads = loadLeads();
       console.log(`Loaded ${leads.length} existing leads.`);
 
       const industries = shuffledIndustries;
@@ -1880,7 +1897,7 @@ async function main(io, loadLeads, saveLeads) {
 
           };
           leads.unshift(lead);
-          await saveLeads(leads);
+          saveLeads(leads);
           console.log(`Saved new lead for ${website}. Total leads: ${leads.length}`); // Added log
           io.emit('new-lead', lead);
         } else {
