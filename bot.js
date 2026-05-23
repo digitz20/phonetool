@@ -14,7 +14,7 @@ const { parsePhoneNumberFromString } = require('libphonenumber-js');
 let currentIndustryIndex = 0;
 let currentCountryCodeIndex = 0;
 const COUNTRY_CODE_BATCH_SIZE = 3;
-const DELAY_BETWEEN_BATCHES_MS = 60 * 1000; // 1 minute delay between batches
+const DELAY_BETWEEN_BATCHES_MS = 3 * 60 * 1000; // 1 minute delay between batches
 
 
 
