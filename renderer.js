@@ -25,8 +25,9 @@ function mergeLeads(newLeads) {
         }
     });
     // Sort leads by scrapedAt in descending order (most recent first)
-    allLeads.sort((a, b) => new Date(b.scrapedAt) - new Date(a.scrapedAt));
+    allLeads.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     localStorage.setItem('allLeads', JSON.stringify(allLeads));
+    currentPage = 1; // Reset to first page when leads are merged/updated
     renderLeads();
 }
 
@@ -34,7 +35,7 @@ function renderLeads() {
     dataContainer.innerHTML = '';
     const lists = {};
 
-    const sortedLeads = allLeads.sort((a, b) => new Date(b.scrapedAt) - new Date(a.scrapedAt));
+    const sortedLeads = allLeads.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     const startIndex = (currentPage - 1) * leadsPerPage;
     const endIndex = startIndex + leadsPerPage;
     const paginatedLeads = sortedLeads.slice(startIndex, endIndex);
