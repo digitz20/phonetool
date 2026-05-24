@@ -762,6 +762,8 @@ async function getWebsitesByIndustry(industry, browser, countryCode = null, dial
   }
 
   for (const tld of tldsToSearch) {
+    // Add a random delay to appear more human and avoid rate limiting
+    await wait(2000 + Math.random() * 3000);
     let page;
 
     try {
