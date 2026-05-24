@@ -786,7 +786,7 @@ async function getWebsitesByIndustry(industry, browser, countryCode = null, dial
         query += ` "${dialingCode}"`;
       }
       const searchUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
-      await page.goto(searchUrl, { waitUntil: 'domcontentloaded', timeout: 90000 });
+      await page.goto(searchUrl, { waitUntil: 'domcontentloaded', timeout: 120000 });
 
       // Selector for the HTML version
       const links = await page.$$eval('a.result__a', anchors =>
@@ -908,7 +908,7 @@ async function extractEmailsFromWebsite(url, browser, dialingCodeToUse = '') {
       let success = false;
       for (let i = 0; i < 5; i++) {
         try {
-          await page.goto(currentUrl, { waitUntil: 'networkidle2', timeout: 60000 });
+          await page.goto(currentUrl, { waitUntil: 'networkidle2', timeout: 120000 });
           const content = await page.content();
           const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/gi;
           const foundEmails = content.match(emailRegex) || [];
