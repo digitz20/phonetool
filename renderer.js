@@ -27,7 +27,6 @@ function mergeLeads(newLeads) {
     // Sort leads by scrapedAt in descending order (most recent first)
     allLeads.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     localStorage.setItem('allLeads', JSON.stringify(allLeads));
-    currentPage = 1; // Reset to first page when leads are merged/updated
     renderLeads();
 }
 
