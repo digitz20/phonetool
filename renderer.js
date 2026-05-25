@@ -10,7 +10,7 @@ const nextPageBtn = document.getElementById('next-page-btn');
 const pageInfo = document.getElementById('page-info');
 
 let allLeads = JSON.parse(localStorage.getItem('allLeads')) || [];
-let currentPage = 1;
+let currentPage = parseInt(localStorage.getItem('currentPage')) || 1;
 const leadsPerPage = 10;
 
 function mergeLeads(newLeads) {
@@ -309,6 +309,7 @@ function renderLeads() {
 prevPageBtn.addEventListener('click', () => {
     if (currentPage > 1) {
         currentPage--;
+        localStorage.setItem('currentPage', currentPage);
         renderLeads();
     }
 });
@@ -317,6 +318,7 @@ nextPageBtn.addEventListener('click', () => {
     const totalPages = Math.ceil(allLeads.length / leadsPerPage);
     if (currentPage < totalPages) {
         currentPage++;
+        localStorage.setItem('currentPage', currentPage);
         renderLeads();
     }
 });
