@@ -400,3 +400,6 @@ setInterval(() => {
     console.log('Requesting latest leads from server...');
     socket.emit('request-latest-leads');
 }, 180000); // 7 minutes * 60 seconds/minute * 1000 ms/second
+
+// Initial render when the page loads
+renderLeads();
