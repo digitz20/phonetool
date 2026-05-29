@@ -57,9 +57,25 @@ function getMultipleRandomCountryCodes(count = 1) {
 
 // ---------- CONFIG ----------
 const CONFIG = {
-  manualCountryCodesForSearch: ['CN', 'GB', 'QA', 'DE', 'RU', 'VN', 'TR', 'IT', 'FR',
-     'JP', 'US', 'CA', 'AE', 'ID', 'TH', 'KR', 'AU', 'SG', 'HK', 'AT', 'BR',
-      'SA', 'SK', 'CZ', 'RO', 'LI', 'ES'], // Manually set country codes for search
+manualCountryCodesForSearch: [
+  'CN', 'GB', 'QA', 'DE', 'RU', 'VN', 'TR', 'IT', 'FR',
+  'JP', 'US', 'CA', 'AE', 'ID', 'TH', 'KR', 'AU', 'SG',
+  'HK', 'AT', 'BR',
+  'ES', 'PT', 'NL', 'BE', 'CH', 'SE', 'NO', 'DK', 'FI',
+  'PL', 'CZ', 'HU', 'RO', 'GR', 'IE', 'UA', 'SK', 'SI',
+  'HR', 'RS', 'BG', 'LT', 'LV', 'EE', 'LU', 'IS', 'MT',
+  'CY', 'AL', 'BA', 'MD',
+  'SA', 'EG', 'ZA', 'NG', 'KE', 'MA', 'DZ', 'IL', 'TN',
+  'GH', 'ET', 'UG', 'TZ', 'CM', 'SN', 'CI', 'ZW', 'ZM',
+  'BW', 'NA', 'OM', 'KW', 'BH', 'JO', 'LB', 'IQ',
+  'IN', 'PK', 'BD', 'MY', 'PH', 'TW', 'LK', 'NP',
+  'KZ', 'UZ', 'MM', 'KH', 'LA', 'MN', 'AF',
+  'AZ', 'GE', 'AM', 'KG', 'TJ',
+  'MX', 'AR', 'CL', 'CO', 'PE', 'VE', 'UY', 'PY',
+  'BO', 'EC', 'GT', 'CR', 'PA', 'DO', 'CU', 'JM',
+  'HN', 'NI', 'SV', 'BS', 'TT',
+  'NZ', 'FJ', 'PG', 'WS', 'VU', 'TO', 'SB', 'FM', 'MH', 'NR', 'KI', 'TV', 'PW'
+],
 
   industries: [
     'Agriculture', 'Apparel', 'Banking', 'Biotechnology', 'Chemical', 'Communications', 'Construction',
